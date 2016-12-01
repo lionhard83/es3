@@ -19,7 +19,7 @@ router.get('/',function(req, res) {
 router.get('/:id', function(req, res) {
   User.find({_id:req.params.id}, function(err,users)
   {
-    if(err) return res.status(500).json({message: 'Utente non trovato'});
+    if(err) return res.status(404).json({message: 'Utente non trovato'});
     res.json(users);
   });
 });
@@ -37,37 +37,34 @@ router.put('/:id',middle,function(req,res,next){
       }
   }
   else{
-  User.findOne({_id: req.params.id}).exec(function(err, user){
-    if(err) return res.status(500).json({message: 'Utente non trovato'});
-    if(!user) return res.status(404).json({message: 'Utente non trovato'});
-    for(key in req.body) {
-      user[key] = req.body[key];
-    }
-    user.save(function(err){
-      if(err) return res.status(500).json({message: 'Non riesco a salvare'});
-      res.json(user);
-    })
+      User.findOne({_id: req.params.id}).exec(function(err, user){
+        if(err) return res.status(500).json({message: 'Utente non trovato'});
+        if(!user) return res.status(404).json({message: 'Utente non trovato'});
+        for(key in req.body) {
+          user[key] = req.body[key];
+        }
+        user.save(function(err){
+          if(err) return res.status(500).json({message: 'Non riesco a salvare'});
+          res.json(user);
+        })
   })}
 });
+// la route delete all viene prima della delete :id per una questione di ambigiutà
+router.delete('/all', function (req, res) {
+  User.remove({}, function(err) {
+        if (err) {
+          res.json({message : 'Errore'})
+        } else {
+          res.json({message : 'Utenti eliminati correttamente'})}
+      });
+});
+
 router.delete('/:id', function (req, res, next) {
   User.remove({_id: req.params.id}, function(err){
-    if(err) return response.status(500).json({message:'Utente non trovato'});
+    if(err) return response.status(404).json({message:'Utente non trovato'});
     res.json({message : 'Utente eliminato correttamente'})
   })
 });
-router.delete('/', function (req, res) {
-  if (req.query.x == '_All' || req.query.x == '_all') {
-    User.remove({}, function(err) {
-          if (err) {
-            res.json({message : 'Errore'})
-          } else {
-            res.json({message : 'Utenti eliminati correttamente'})}
-        });
-  };
-
-});
-
-
 
 module.exports = router;
 
